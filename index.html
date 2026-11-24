@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistik Perdagangan Tembaga AS (UN Comtrade 2016–2025)</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        copper: {
+                            50: '#FDF8F3',
+                            100: '#FBEEDF',
+                            200: '#F7D9BF',
+                            300: '#F1BD96',
+                            400: '#E79B65',
+                            500: '#D97706', // Primary Copper
+                            600: '#B45309',
+                            700: '#92400E',
+                            800: '#78350F',
+                            900: '#451A03',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Smooth transitions & custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F5F9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+        .tab-active {
+            border-bottom: 2px solid #D97706;
+            color: #D97706;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-slate-800 bg-slate-50 min-h-screen flex flex-col">
+
+    <!-- HEADER UTAMA GELAP ELEGAN -->
+    <header class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white border-b border-slate-700/60 shadow-xl sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                
+                <!-- Judul & Subjudul -->
+                <div class="flex items-start gap-4">
+                    <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400 hidden sm:block shadow-inner">
+                        <i class="fa-solid font-bold fa-chart-column text-2xl text-amber-500"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                <i class="fa-solid fa-database text-[10px] mr-1.5"></i> UN Comtrade Official Data
+                            </span>
+                            <span class="text-xs text-slate-400">Periode 2016–2025</span>
+                        </div>
+                        <h1 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight mt-1 flex items-center gap-2">
+                            Statistik Perdagangan Tembaga AS
+                            <span class="text-amber-500 text-xs font-mono font-medium px-2 py-0.5 bg-slate-800 rounded border border-amber-500/20">HS 26 & 74</span>
+                        </h1>
+                        <p class="text-xs sm:text-sm text-slate-300 mt-1 flex items-center gap-1.5 flex-wrap">
+                            <span><strong class="text-slate-200">Reporter:</strong> USA</span>
+                            <span class="text-slate-600">•</span>
+                            <span><strong class="text-slate-200">Mitra:</strong> World</span>
+                            <span class="text-slate-600">•</span>
+                            <span class="text-slate-400">HS Codes: 260300, 740100, 740200, 740311, 740400</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Sakelar Mode Metrik Global -->
+                <div class="flex items-center bg-slate-800/90 p-1.5 rounded-xl border border-slate-700/80 shadow-md self-start md:self-auto">
+                    <button id="metricBtnValue" onclick="setGlobalMetric('value')" class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 bg-amber-500 text-slate-950 shadow">
+                        <i class="fa-solid fa-dollar-sign"></i>
+                        <span>Nilai ($ USD)</span>
+                    </button>
+                    <button id="metricBtnWeight" onclick="setGlobalMetric('weight')" class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-weight-hanging"></i>
+                        <span>Volume Berat (Ton Metrik)</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- STICKY CONTROL BAR FILTER -->
+    <section class="bg-white border-b border-slate-200 shadow-sm sticky top-[73px] z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3 flex-grow">
+                    <!-- Dropdown Komoditas -->
+                    <div class="flex-grow sm:flex-grow-0 min-w-[200px]">
+                        <label for="filterCommodity" class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Filter Komoditas HS</label>
+                        <select id="filterCommodity" onchange="updateDashboard()" class="w-full text-xs font-medium bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                            <option value="ALL">Semua Komoditas Tembaga</option>
+                            <option value="260300">HS 260300 - Ores & Concentrates</option>
+                            <option value="740100">HS 740100 - Mattes & Cement Copper</option>
+                            <option value="740200">HS 740200 - Unrefined / Anodes</option>
+                            <option value="740311">HS 740311 - Refined Cathodes</option>
+                            <option value="740400">HS 740400 - Waste & Scrap</option>
+                        </select>
+                    </div>
+
+                    <!-- Dropdown Tahun Awal -->
+                    <div class="w-1/2 sm:w-auto">
+                        <label for="filterStartYear" class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Tahun Awal</label>
+                        <select id="filterStartYear" onchange="updateDashboard()" class="w-full text-xs font-medium bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                            <option value="2016" selected>2016</option>
+                            <option value="2017">2017</option>
+                            <option value="2018">2018</option>
+                            <option value="2019">2019</option>
+                            <option value="2020">2020</option>
+                            <option value="2021">2021</option>
+                            <option value="2022">2022</option>
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                        </select>
+                    </div>
+
+                    <!-- Dropdown Tahun Akhir -->
+                    <div class="w-1/2 sm:w-auto">
+                        <label for="filterEndYear" class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Tahun Akhir</label>
+                        <select id="filterEndYear" onchange="updateDashboard()" class="w-full text-xs font-medium bg-slate-50 border border-slate-300 text-slate-700 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                            <option value="2016">2016</option>
+                            <option value="2017">2017</option>
+                            <option value="2018">2018</option>
+                            <option value="2019">2019</option>
+                            <option value="2020">2020</option>
+                            <option value="2021">2021</option>
+                            <option value="2022">2022</option>
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                            <option value="2025" selected>2025</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tombol Reset Filter -->
+                <div class="flex items-end">
+                    <button onclick="resetFilters()" class="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg transition">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Reset Filter</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- KONTEN UTAMA DASBOR -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- CATATAN TRANSPARANSI VOLUME BERAT (DISMISSIBLE BANNER) -->
+        <div id="weightBanner" class="bg-amber-50/90 border border-amber-200 rounded-2xl p-4 shadow-sm relative transition duration-300">
+            <div class="flex items-start gap-3">
+                <div class="p-2 bg-amber-500 text-white rounded-xl shadow-sm mt-0.5">
+                    <i class="fa-solid fa-circle-info text-sm"></i>
+                </div>
+                <div class="flex-grow text-xs text-amber-900 leading-relaxed pr-6">
+                    <strong class="font-bold text-amber-950 block text-sm mb-0.5">Catatan Transparansi Volume Berat (Kg & Ton Metrik)</strong>
+                    87 dari total 100 catatan data UN Comtrade mencantumkan angka volume berat resmi yang dikonsolidasikan dari variabel <code class="bg-amber-100 px-1 py-0.5 rounded font-mono text-[11px] font-semibold text-amber-800">netWgt</code>, <code class="bg-amber-100 px-1 py-0.5 rounded font-mono text-[11px] font-semibold text-amber-800">altQty</code>, dan <code class="bg-amber-100 px-1 py-0.5 rounded font-mono text-[11px] font-semibold text-amber-800">qty</code> lalu dikonversi ke Ton Metrik. Sebanyak 13 baris data (terutama ekspor Bijih Tembaga HS 260300) tidak mencantumkan berat fisik dalam laporan resmi UN Comtrade.
+                </div>
+                <button onclick="dismissBanner()" class="text-amber-500 hover:text-amber-700 p-1 rounded-lg hover:bg-amber-100/50 transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 4 KARTU KPI REAL-TIME -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- KPI 1: Total Ekspor -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-up-from-bracket"></i> Total Ekspor
+                    </span>
+                    <span class="px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">
+                        Akumulasi
+                    </span>
+                </div>
+                <div id="kpiExportMain" class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 tracking-tight">
+                    $0.00 B
+                </div>
+                <div id="kpiExportDual" class="text-xs font-medium text-slate-500 font-mono mt-1">
+                    / 0.00 Juta Ton
+                </div>
+            </div>
+
+            <!-- KPI 2: Total Impor -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-600 flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-down-to-bracket"></i> Total Impor
+                    </span>
+                    <span class="px-2 py-0.5 text-[10px] font-semibold bg-amber-50 text-amber-700 rounded-full border border-amber-200">
+                        Akumulasi
+                    </span>
+                </div>
+                <div id="kpiImportMain" class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 tracking-tight">
+                    $0.00 B
+                </div>
+                <div id="kpiImportDual" class="text-xs font-medium text-slate-500 font-mono mt-1">
+                    / 0.00 Juta Ton
+                </div>
+            </div>
+
+            <!-- KPI 3: Total Perdagangan -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                        <i class="fa-solid fa-right-left"></i> Total Perdagangan
+                    </span>
+                    <span class="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-700 rounded-full border border-slate-200">
+                        Volume Total
+                    </span>
+                </div>
+                <div id="kpiTradeMain" class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 tracking-tight">
+                    $0.00 B
+                </div>
+                <div id="kpiTradeDual" class="text-xs font-medium text-slate-500 font-mono mt-1">
+                    / 0.00 Juta Ton
+                </div>
+            </div>
+
+            <!-- KPI 4: Neraca Net -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-blue-600 flex items-center gap-1.5">
+                        <i class="fa-solid fa-scale-balanced"></i> Neraca Net (Ekspor - Impor)
+                    </span>
+                    <span id="kpiNetStatus" class="px-2 py-0.5 text-[10px] font-semibold bg-blue-50 text-blue-700 rounded-full border border-blue-200">
+                        Net Balance
+                    </span>
+                </div>
+                <div id="kpiNetMain" class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 tracking-tight">
+                    $0.00 B
+                </div>
+                <div id="kpiNetDual" class="text-xs font-medium text-slate-500 font-mono mt-1">
+                    / 0.00 Juta Ton
+                </div>
+            </div>
+
+        </div>
+
+        <!-- GRAFIK 1: TREN TAHUNAN EKSPOR VS IMPOR & GARIS NERACA NET (LEBAR PENUH) -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-slate-100 gap-2">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-amber-500"></i>
+                        <span>Tren Perdagangan Tahunan & Garis Neraca Net (2016–2025)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500">Perbandingan historis total arus Ekspor (Hijau), Impor (Kuning), dan Neraca Bersih (Garis Biru)</p>
+                </div>
+                <div class="text-xs font-mono text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200 self-start sm:self-auto">
+                    Satuan: <span id="chart1UnitLabel" class="font-semibold text-slate-700">Miliar USD ($)</span>
+                </div>
+            </div>
+            <div class="h-72 sm:h-80 w-full relative">
+                <canvas id="chart1Trend"></canvas>
+            </div>
+        </div>
+
+        <!-- GRAFIK 2: COMBINED CHART PERBANDINGAN PER KODE HS (LEBAR PENUH TUNGGAL) -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between pb-4 mb-4 border-b border-slate-100 gap-3">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-amber-500"></i>
+                            <span>Analisis Komprehensif Per Kode HS (Bagan Kombinasi Interaktif)</span>
+                        </h2>
+                        <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md">Klik Batang/Titik untuk Filter</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-0.5">Batang Ekspor/Impor (Sumbu Y Kiri) • Garis Neraca Bersih (Sumbu Y Kiri) • Garis Pangsa Perdagangan % (Sumbu Y Kanan)</p>
+                </div>
+                
+                <!-- Kontrol Interaktif Grafik 2 -->
+                <div class="flex flex-wrap items-center gap-2 self-start lg:self-auto">
+                    <!-- Toggle Skala -->
+                    <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
+                        <button id="scaleLinearBtn" onclick="setChart2Scale('linear')" class="px-2.5 py-1 text-[11px] font-bold rounded bg-white text-slate-800 shadow-sm transition">Linear</button>
+                        <button id="scaleLogBtn" onclick="setChart2Scale('logarithmic')" class="px-2.5 py-1 text-[11px] font-bold rounded text-slate-500 hover:text-slate-800 transition">Logaritmik</button>
+                    </div>
+
+                    <!-- Toggle Layer Garis -->
+                    <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
+                        <button id="layerAllBtn" onclick="setChart2LineLayer('ALL')" class="px-2.5 py-1 text-[11px] font-bold rounded bg-white text-slate-800 shadow-sm transition">Semua Garis</button>
+                        <button id="layerNetBtn" onclick="setChart2LineLayer('NET')" class="px-2.5 py-1 text-[11px] font-bold rounded text-slate-500 hover:text-slate-800 transition">Neraca Net</button>
+                        <button id="layerShareBtn" onclick="setChart2LineLayer('SHARE')" class="px-2.5 py-1 text-[11px] font-bold rounded text-slate-500 hover:text-slate-800 transition">Pangsa %</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-80 sm:h-96 w-full relative">
+                <canvas id="chart2Combined"></canvas>
+            </div>
+        </div>
+
+        <!-- GRAFIK 3: EVOLUSI TAHUNAN MASING-MASING KOMODITAS (LEBAR PENUH) -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-slate-100 gap-3">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-area text-amber-500"></i>
+                        <span>Evolusi Tahunan per Komoditas (2016–2025)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500">Pelacakan tren 5 komoditas tembaga secara serentak dari tahun ke tahun</p>
+                </div>
+                
+                <!-- Toggle Arus Grafik 3 -->
+                <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 self-start sm:self-auto">
+                    <button id="c3FlowTotal" onclick="setChart3Flow('TOTAL')" class="px-3 py-1 text-xs font-semibold rounded bg-white text-slate-900 shadow-sm transition">Total Perdagangan</button>
+                    <button id="c3FlowExport" onclick="setChart3Flow('Export')" class="px-3 py-1 text-xs font-semibold rounded text-slate-600 hover:text-slate-900 transition">Ekspor</button>
+                    <button id="c3FlowImport" onclick="setChart3Flow('Import')" class="px-3 py-1 text-xs font-semibold rounded text-slate-600 hover:text-slate-900 transition">Impor</button>
+                </div>
+            </div>
+
+            <div class="h-72 sm:h-80 w-full relative">
+                <canvas id="chart3CommodityEvolution"></canvas>
+            </div>
+        </div>
+
+        <!-- RINGKASAN EKSEKUTIF & INSIGHT UTAMA (3 KARTU ANALITIS) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            
+            <!-- Insight 1 -->
+            <div class="bg-gradient-to-br from-amber-500/5 via-white to-white rounded-2xl p-5 border border-amber-200/80 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="p-2 bg-amber-500/10 text-amber-600 rounded-lg text-xs font-bold">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Insight 1
+                        </span>
+                        <span class="text-[11px] font-semibold text-slate-400">HS 740311</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900 mb-2">Lonjakan Defisit Katoda Tembaga Refinasi (2025)</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Nilai impor katoda tembaga refinasi (<code class="bg-slate-100 px-1 rounded text-slate-800">HS 740311</code>) melonjak drastis hingga **$16,69 Miliar USD** (atau **1,64 Juta Ton**) pada 2025, memicu defisit neraca perdagangan katoda terbesar dalam 10 tahun terakhir akibat lonjakan konsumsi manufaktur domestik AS.
+                    </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                    <span class="text-slate-500">Impor Katoda 2025:</span>
+                    <strong class="font-mono text-slate-900 font-bold">$16,69B / 1,64M Ton</strong>
+                </div>
+            </div>
+
+            <!-- Insight 2 -->
+            <div class="bg-gradient-to-br from-emerald-500/5 via-white to-white rounded-2xl p-5 border border-emerald-200/80 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="p-2 bg-emerald-500/10 text-emerald-600 rounded-lg text-xs font-bold">
+                            <i class="fa-solid fa-recycle"></i> Insight 2
+                        </span>
+                        <span class="text-[11px] font-semibold text-slate-400">HS 740400 & 260300</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900 mb-2">Dominasi Ekspor Skrap & Konsentrat Tembaga</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Skrap tembaga (<code class="bg-slate-100 px-1 rounded text-slate-800">HS 740400</code>) menjadi komoditas ekspor fisik terbesar AS dengan kontribusi total **9,11 Juta Ton** ($39,05B), disusul Konsentrat Tembaga (<code class="bg-slate-100 px-1 rounded text-slate-800">HS 260300</code>) yang menyumbang ekspor senilai **$25,55B**.
+                    </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                    <span class="text-slate-500">Total Ekspor Skrap:</span>
+                    <strong class="font-mono text-slate-900 font-bold">$39,05B / 9,11M Ton</strong>
+                </div>
+            </div>
+
+            <!-- Insight 3 -->
+            <div class="bg-gradient-to-br from-blue-500/5 via-white to-white rounded-2xl p-5 border border-blue-200/80 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="p-2 bg-blue-500/10 text-blue-600 rounded-lg text-xs font-bold">
+                            <i class="fa-solid fa-arrow-trend-up"></i> Insight 3
+                        </span>
+                        <span class="text-[11px] font-semibold text-slate-400">Dekade 2016–2025</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900 mb-2">Akselerasi Nilai Perdagangan 10 Tahun</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Total volume nilai perdagangan tembaga AS tumbuh dari **$9,28 Miliar USD** pada tahun 2016 menjadi **$29,20 Miliar USD** pada tahun 2025. Laju pertumbuhan tahunan majemuk (CAGR) mencapai **+13,59% / tahun**.
+                    </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                    <span class="text-slate-500">CAGR Nilai Perdagangan:</span>
+                    <strong class="font-mono text-emerald-600 font-bold">+13,59% / tahun</strong>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RINCIAN TABEL DATA RESMI UN COMTRADE (TANPA FRASA 10 BARIS PER SLIDE) -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            
+            <!-- Table Header Bar -->
+            <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-table-list text-amber-500"></i>
+                            <span>Rincian Tabel Data Resmi UN Comtrade</span>
+                        </h2>
+                        <!-- Indikator Titik Slide / Halaman (Tanpa teks '10 baris per slide') -->
+                        <div id="tableSlideDots" class="hidden sm:flex items-center gap-1 ml-2"></div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-0.5">Data transaksi historis tembaga AS dengan klasifikasi Kode HS dan metode pencatatan volume berat</p>
+                </div>
+
+                <!-- Kontrol Tabel: Pencarian, Filter Arus, Unduh CSV -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-400"></i>
+                        <input id="tableSearch" type="text" oninput="onTableSearchChange()" placeholder="Cari Kode HS, nama..." class="pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-700 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 w-40 sm:w-52">
+                    </div>
+
+                    <!-- Filter Arus -->
+                    <select id="tableFlowFilter" onchange="onTableFlowFilterChange()" class="text-xs bg-white border border-slate-300 text-slate-700 rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                        <option value="ALL">Semua Arus</option>
+                        <option value="Export">Ekspor</option>
+                        <option value="Import">Impor</option>
+                    </select>
+
+                    <!-- Tombol Unduh CSV -->
+                    <button onclick="downloadCSV()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg shadow-sm transition">
+                        <i class="fa-solid fa-file-arrow-down"></i>
+                        <span>Unduh CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Container Tabel Responsi & Transisi -->
+            <div class="overflow-x-auto min-h-[420px]">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100/80 text-slate-600 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200 select-none">
+                            <th onclick="sortTable('y')" class="py-3 px-4 cursor-pointer hover:bg-slate-200/60 transition">
+                                <div class="flex items-center gap-1">
+                                    <span>Tahun</span>
+                                    <i id="sortIcon_y" class="fa-solid fa-sort text-slate-400"></i>
+                                </div>
+                            </th>
+                            <th onclick="sortTable('f')" class="py-3 px-4 cursor-pointer hover:bg-slate-200/60 transition">
+                                <div class="flex items-center gap-1">
+                                    <span>Arus</span>
+                                    <i id="sortIcon_f" class="fa-solid fa-sort text-slate-400"></i>
+                                </div>
+                            </th>
+                            <th onclick="sortTable('c')" class="py-3 px-4 cursor-pointer hover:bg-slate-200/60 transition">
+                                <div class="flex items-center gap-1">
+                                    <span>Kode HS</span>
+                                    <i id="sortIcon_c" class="fa-solid fa-sort text-slate-400"></i>
+                                </div>
+                            </th>
+                            <th class="py-3 px-4">Deskripsi Komoditas</th>
+                            <th onclick="sortTable('v')" class="py-3 px-4 text-right cursor-pointer hover:bg-slate-200/60 transition">
+                                <div class="flex items-center justify-end gap-1">
+                                    <span>Nilai (USD)</span>
+                                    <i id="sortIcon_v" class="fa-solid fa-sort text-slate-400"></i>
+                                </div>
+                            </th>
+                            <th onclick="sortTable('w')" class="py-3 px-4 text-right cursor-pointer hover:bg-slate-200/60 transition">
+                                <div class="flex items-center justify-end gap-1">
+                                    <span>Berat (Ton Metrik)</span>
+                                    <i id="sortIcon_w" class="fa-solid fa-sort text-slate-400"></i>
+                                </div>
+                            </th>
+                            <th class="py-3 px-4 text-right">Berat (kg)</th>
+                            <th class="py-3 px-4 text-center">Sumber Berat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-100 text-xs text-slate-700 font-medium">
+                        <!-- Baris tabel diisi via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer Paginasi & Navigasi Slide (Tanpa frasa '10 baris per slide') -->
+            <div class="px-5 py-4 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <!-- Keterangan Ringkas Paginasi -->
+                <div id="tablePaginationInfo" class="text-xs font-semibold text-slate-600">
+                    Menampilkan 1–10 dari 100 baris • Slide 1 / 10
+                </div>
+
+                <!-- Control Button Navigasi Slide -->
+                <div class="flex items-center gap-1.5">
+                    <button id="btnPrevPage" onclick="changePage(-1)" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-1">
+                        <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                        <span>Sebelumnya</span>
+                    </button>
+                    
+                    <div id="tablePageNumbers" class="flex items-center gap-1">
+                        <!-- Nomor slide diisi via JS -->
+                    </div>
+
+                    <button id="btnNextPage" onclick="changePage(1)" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-1">
+                        <span>Berikutnya</span>
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER Halaman -->
+    <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 mt-12 py-6 text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-amber-500"></i>
+                <span>Executive Daylight Analytics Dashboard • Sumber Data Resmi UN Comtrade (2016–2025)</span>
+            </div>
+            <div class="text-slate-500 font-mono text-[11px]">
+                Klasifikasi Komoditas Tembaga US ITC / UN Comtrade
+            </div>
+        </div>
+    </footer>
+
+    <!-- LOGIKA JAVASCRIPT & KODE UTAMA DASBOR -->
+    <script>
+        // 1. DATASET RESMI 100 BARIS DATA UN COMTRADE (2016-2025)
+        const rawData = [
+            {"y": 2016, "f": "Import", "c": "260300", "d": "Copper ores and concentrates", "v": 155555337.0, "w": 0.0, "ws": "missing"},
+            {"y": 2016, "f": "Import", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 9553.0, "w": 431.0, "ws": "netWgt"},
+            {"y": 2016, "f": "Import", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 3129179.0, "w": 273522.0, "ws": "altQty"},
+            {"y": 2016, "f": "Import", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 3367854530.0, "w": 693873049.0, "ws": "altQty"},
+            {"y": 2016, "f": "Import", "c": "740400", "d": "Copper; waste and scrap", "v": 462341588.0, "w": 125204748.0, "ws": "netWgt"},
+            {"y": 2016, "f": "Export", "c": "260300", "d": "Copper ores and concentrates", "v": 2412904752.0, "w": 0.0, "ws": "missing"},
+            {"y": 2016, "f": "Export", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 34428508.0, "w": 10761281.0, "ws": "netWgt"},
+            {"y": 2016, "f": "Export", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 41077036.0, "w": 9538243.0, "ws": "netWgt"},
+            {"y": 2016, "f": "Export", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 565157920.0, "w": 118489090.0, "ws": "netWgt"},
+            {"y": 2016, "f": "Export", "c": "740400", "d": "Copper; waste and scrap", "v": 2232812025.0, "w": 945908450.0, "ws": "netWgt"},
+            {"y": 2017, "f": "Import", "c": "260300", "d": "Copper ores and concentrates", "v": 100286198.0, "w": 32591186.0, "ws": "netWgt"},
+            {"y": 2017, "f": "Import", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 808692.0, "w": 591840.0, "ws": "netWgt"},
+            {"y": 2017, "f": "Import", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 3602686.0, "w": 504290.0, "ws": "qty"},
+            {"y": 2017, "f": "Import", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 4956745595.0, "w": 808958291.997, "ws": "netWgt"},
+            {"y": 2017, "f": "Import", "c": "740400", "d": "Copper; waste and scrap", "v": 765571647.0, "w": 165213999.501, "ws": "netWgt"},
+            {"y": 2017, "f": "Export", "c": "260300", "d": "Copper ores and concentrates", "v": 1715165958.0, "w": 254214799.077, "ws": "netWgt"},
+            {"y": 2017, "f": "Export", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 1778913.0, "w": 729400.0, "ws": "netWgt"},
+            {"y": 2017, "f": "Export", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 46732213.0, "w": 9700226.0, "ws": "netWgt"},
+            {"y": 2017, "f": "Export", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 357440571.0, "w": 55638999.0, "ws": "netWgt"},
+            {"y": 2017, "f": "Export", "c": "740400", "d": "Copper; waste and scrap", "v": 2761225658.0, "w": 1006307472.0, "ws": "netWgt"},
+            {"y": 2018, "f": "Import", "c": "260300", "d": "Copper ores and concentrates", "v": 144041028.0, "w": 45312178.0, "ws": "netWgt"},
+            {"y": 2018, "f": "Import", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 794248.0, "w": 538171.388, "ws": "netWgt"},
+            {"y": 2018, "f": "Import", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 2903245.0, "w": 0.0, "ws": "missing"},
+            {"y": 2018, "f": "Import", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 4927103103.0, "w": 741384097.792, "ws": "netWgt"},
+            {"y": 2018, "f": "Import", "c": "740400", "d": "Copper; waste and scrap", "v": 770293590.0, "w": 156901309.336, "ws": "netWgt"},
+            {"y": 2018, "f": "Export", "c": "260300", "d": "Copper ores and concentrates", "v": 1815054981.0, "w": 278331277.164, "ws": "netWgt"},
+            {"y": 2018, "f": "Export", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 12886203.0, "w": 3095174.0, "ws": "netWgt"},
+            {"y": 2018, "f": "Export", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 42663750.0, "w": 9072656.0, "ws": "netWgt"},
+            {"y": 2018, "f": "Export", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 932419006.0, "w": 139989804.0, "ws": "netWgt"},
+            {"y": 2018, "f": "Export", "c": "740400", "d": "Copper; waste and scrap", "v": 3167041527.0, "w": 915553840.0, "ws": "netWgt"},
+            {"y": 2019, "f": "Import", "c": "260300", "d": "Copper ores and concentrates", "v": 153450027.0, "w": 28243069.76, "ws": "netWgt"},
+            {"y": 2019, "f": "Export", "c": "260300", "d": "Copper ores and concentrates", "v": 2337862230.0, "w": 366614756.268, "ws": "qty"},
+            {"y": 2019, "f": "Import", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 386397.0, "w": 173130.0, "ws": "netWgt"},
+            {"y": 2019, "f": "Export", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 5364560.0, "w": 1831359.0, "ws": "netWgt"},
+            {"y": 2019, "f": "Import", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 1812356.0, "w": 222176.955, "ws": "netWgt"},
+            {"y": 2019, "f": "Export", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 39275248.0, "w": 8465056.0, "ws": "netWgt"},
+            {"y": 2019, "f": "Import", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 4003568232.0, "w": 0.0, "ws": "missing"},
+            {"y": 2019, "f": "Export", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 587009147.0, "w": 0.0, "ws": "missing"},
+            {"y": 2019, "f": "Import", "c": "740400", "d": "Copper; waste and scrap", "v": 606062539.0, "w": 0.0, "ws": "missing"},
+            {"y": 2019, "f": "Export", "c": "740400", "d": "Copper; waste and scrap", "v": 2827866336.0, "w": 872982304.0, "ws": "netWgt"},
+            {"y": 2020, "f": "Import", "c": "260300", "d": "Copper ores and concentrates", "v": 45483892.0, "w": 12392400.0, "ws": "netWgt"},
+            {"y": 2020, "f": "Import", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 54221.0, "w": 2544.0, "ws": "altQty"},
+            {"y": 2020, "f": "Import", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 2101337.0, "w": 282303.0, "ws": "qty"},
+            {"y": 2020, "f": "Import", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 4090045024.0, "w": 672513624.0, "ws": "altQty"},
+            {"y": 2020, "f": "Import", "c": "740400", "d": "Copper; waste and scrap", "v": 495796068.0, "w": 113926582.0, "ws": "altQty"},
+            {"y": 2020, "f": "Export", "c": "260300", "d": "Copper ores and concentrates", "v": 2348009583.0, "w": 0.0, "ws": "missing"},
+            {"y": 2020, "f": "Export", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 6459287.0, "w": 3459197.0, "ws": "netWgt"},
+            {"y": 2020, "f": "Export", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 33774668.0, "w": 6270461.0, "ws": "netWgt"},
+            {"y": 2020, "f": "Export", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 679615982.0, "w": 101886651.599, "ws": "netWgt"},
+            {"y": 2020, "f": "Export", "c": "740400", "d": "Copper; waste and scrap", "v": 2671408163.0, "w": 777170729.0, "ws": "netWgt"},
+            {"y": 2021, "f": "Import", "c": "260300", "d": "Copper ores and concentrates", "v": 104430312.0, "w": 19775767.884, "ws": "netWgt"},
+            {"y": 2021, "f": "Import", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 123246.0, "w": 52719.0, "ws": "netWgt"},
+            {"y": 2021, "f": "Import", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 2998931.0, "w": 379596.0, "ws": "netWgt"},
+            {"y": 2021, "f": "Import", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 8454893178.0, "w": 907873323.207, "ws": "netWgt"},
+            {"y": 2021, "f": "Import", "c": "740400", "d": "Copper; waste and scrap", "v": 830493381.0, "w": 142172197.18, "ws": "netWgt"},
+            {"y": 2021, "f": "Export", "c": "260300", "d": "Copper ores and concentrates", "v": 2924569880.0, "w": 364268507.435, "ws": "netWgt"},
+            {"y": 2021, "f": "Export", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 2295024.0, "w": 1055218.0, "ws": "netWgt"},
+            {"y": 2021, "f": "Export", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 89184672.0, "w": 25075718.0, "ws": "netWgt"},
+            {"y": 2021, "f": "Export", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 1405959933.0, "w": 145601191.0, "ws": "altQty"},
+            {"y": 2021, "f": "Export", "c": "740400", "d": "Copper; waste and scrap", "v": 4497183521.0, "w": 919362997.356, "ws": "netWgt"},
+            {"y": 2022, "f": "Import", "c": "260300", "d": "Copper ores and concentrates", "v": 126231559.0, "w": 0.0, "ws": "missing"},
+            {"y": 2022, "f": "Import", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 941481.0, "w": 387059.0, "ws": "netWgt"},
+            {"y": 2022, "f": "Import", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 2775203.0, "w": 306036.0, "ws": "altQty"},
+            {"y": 2022, "f": "Import", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 6616109056.0, "w": 720128276.0, "ws": "altQty"},
+            {"y": 2022, "f": "Import", "c": "740400", "d": "Copper; waste and scrap", "v": 777621090.0, "w": 128669285.102, "ws": "netWgt"},
+            {"y": 2022, "f": "Export", "c": "260300", "d": "Copper ores and concentrates", "v": 3039730818.0, "w": 0.0, "ws": "missing"},
+            {"y": 2022, "f": "Export", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 2980620.0, "w": 1437777.0, "ws": "netWgt"},
+            {"y": 2022, "f": "Export", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 77528272.0, "w": 12019128.0, "ws": "netWgt"},
+            {"y": 2022, "f": "Export", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 681035622.0, "w": 87065780.0, "ws": "altQty"},
+            {"y": 2022, "f": "Export", "c": "740400", "d": "Copper; waste and scrap", "v": 4907976240.0, "w": 931713716.0, "ws": "netWgt"},
+            {"y": 2023, "f": "Import", "c": "260300", "d": "Copper ores and concentrates", "v": 35616720.0, "w": 0.0, "ws": "missing"},
+            {"y": 2023, "f": "Import", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 564013.0, "w": 176570.0, "ws": "netWgt"},
+            {"y": 2023, "f": "Import", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 2114330.0, "w": 125840.223, "ws": "qty"},
+            {"y": 2023, "f": "Import", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 6671446294.0, "w": 763788693.0, "ws": "altQty"},
+            {"y": 2023, "f": "Import", "c": "740400", "d": "Copper; waste and scrap", "v": 670710336.0, "w": 118264697.949, "ws": "netWgt"},
+            {"y": 2023, "f": "Export", "c": "260300", "d": "Copper ores and concentrates", "v": 2607241445.0, "w": 0.0, "ws": "missing"},
+            {"y": 2023, "f": "Export", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 22857266.0, "w": 2234038.0, "ws": "netWgt"},
+            {"y": 2023, "f": "Export", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 244559418.0, "w": 30317244.0, "ws": "netWgt"},
+            {"y": 2023, "f": "Export", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 1449318467.0, "w": 156474813.292, "ws": "netWgt"},
+            {"y": 2023, "f": "Export", "c": "740400", "d": "Copper; waste and scrap", "v": 4594459896.0, "w": 880302605.0, "ws": "netWgt"},
+            {"y": 2024, "f": "Import", "c": "260300", "d": "Copper ores and concentrates", "v": 320761.0, "w": 472038.0, "ws": "netWgt"},
+            {"y": 2024, "f": "Import", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 1360261.0, "w": 426674.0, "ws": "netWgt"},
+            {"y": 2024, "f": "Import", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 832982.0, "w": 14625.0, "ws": "netWgt"},
+            {"y": 2024, "f": "Import", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 8536729637.0, "w": 907795475.0, "ws": "altQty"},
+            {"y": 2024, "f": "Import", "c": "740400", "d": "Copper; waste and scrap", "v": 834760266.0, "w": 138187012.0, "ws": "altQty"},
+            {"y": 2024, "f": "Export", "c": "260300", "d": "Copper ores and concentrates", "v": 2810621782.0, "w": 0.0, "ws": "missing"},
+            {"y": 2024, "f": "Export", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 1699227.0, "w": 831440.0, "ws": "netWgt"},
+            {"y": 2024, "f": "Export", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 456017851.0, "w": 51101210.0, "ws": "netWgt"},
+            {"y": 2024, "f": "Export", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 1586129375.0, "w": 161247770.0, "ws": "altQty"},
+            {"y": 2024, "f": "Export", "c": "740400", "d": "Copper; waste and scrap", "v": 5380562874.0, "w": 959347214.0, "ws": "netWgt"},
+            {"y": 2025, "f": "Import", "c": "260300", "d": "Copper ores and concentrates", "v": 660051.0, "w": 221213.657, "ws": "netWgt"},
+            {"y": 2025, "f": "Import", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 751740.0, "w": 236184.0, "ws": "netWgt"},
+            {"y": 2025, "f": "Import", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 2269504.0, "w": 232588.0, "ws": "altQty"},
+            {"y": 2025, "f": "Import", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 16687380471.0, "w": 1635550464.0, "ws": "netWgt"},
+            {"y": 2025, "f": "Import", "c": "740400", "d": "Copper; waste and scrap", "v": 808151570.0, "w": 129096998.0, "ws": "altQty"},
+            {"y": 2025, "f": "Export", "c": "260300", "d": "Copper ores and concentrates", "v": 3536544956.0, "w": 0.0, "ws": "missing"},
+            {"y": 2025, "f": "Export", "c": "740100", "d": "Copper mattes; cement copper (precipitated copper)", "v": 1994858.0, "w": 718262.059, "ws": "netWgt"},
+            {"y": 2025, "f": "Export", "c": "740200", "d": "Copper; unrefined, copper anodes for electrolytic refining", "v": 444848170.0, "w": 49257057.0, "ws": "netWgt"},
+            {"y": 2025, "f": "Export", "c": "740311", "d": "Copper; refined, unwrought, cathodes and sections of cathodes", "v": 1713894888.0, "w": 163079762.888, "ws": "netWgt"},
+            {"y": 2025, "f": "Export", "c": "740400", "d": "Copper; waste and scrap", "v": 6005468120.0, "w": 904502988.328, "ws": "netWgt"}
+        ];
+
+        // 2. STATE GLOBAL APLIKASI
+        let currentMetric = 'value'; // 'value' ($ USD) atau 'weight' (Ton Metrik)
+        let chart1Instance = null;
+        let chart2Instance = null;
+        let chart3Instance = null;
+
+        // Configuration State Grafik 2 & 3
+        let chart2Scale = 'linear'; // 'linear' atau 'logarithmic'
+        let chart2Layer = 'ALL'; // 'ALL', 'NET', 'SHARE'
+        let chart3Flow = 'TOTAL'; // 'TOTAL', 'Export', 'Import'
+
+        // State Tabel & Paginasi
+        let tableCurrentPage = 0;
+        const pageSize = 10;
+        let tableSortKey = 'y';
+        let tableSortOrder = 'desc'; // 'asc' atau 'desc'
+        let tableFilteredData = [];
+
+        // 3. INISIALISASI SAAT HALAMAN SELESAI DI-LOAD
+        window.onload = function() {
+            updateDashboard();
+        };
+
+        // 4. METODE FORMATTER ANGKA & MATA UANG
+        function formatNumber(num) {
+            return new Intl.NumberFormat('id-ID').format(Math.round(num));
+        }
+
+        function formatUSD(val) {
+            if (val >= 1e9) return '$' + (val / 1e9).toFixed(2) + ' B';
+            if (val >= 1e6) return '$' + (val / 1e6).toFixed(2) + ' M';
+            return '$' + new Intl.NumberFormat('en-US').format(val);
+        }
+
+        function formatTons(kgVal) {
+            const tons = kgVal / 1000;
+            if (tons >= 1e6) return (tons / 1e6).toFixed(2) + ' Juta Ton';
+            if (tons >= 1e3) return (tons / 1e3).toFixed(2) + ' Ribu Ton';
+            return new Intl.NumberFormat('id-ID').format(Math.round(tons)) + ' Ton';
+        }
+
+        function dismissBanner() {
+            const banner = document.getElementById('weightBanner');
+            banner.style.opacity = '0';
+            setTimeout(() => banner.style.display = 'none', 300);
+        }
+
+        // 5. PENETAPAN MODE METRIK GLOBAL ($ USD vs Ton Metrik)
+        function setGlobalMetric(metric) {
+            currentMetric = metric;
+            const btnVal = document.getElementById('metricBtnValue');
+            const btnWgt = document.getElementById('metricBtnWeight');
+
+            if (metric === 'value') {
+                btnVal.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 bg-amber-500 text-slate-950 shadow';
+                btnWgt.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-300 hover:text-white';
+            } else {
+                btnWgt.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 bg-amber-500 text-slate-950 shadow';
+                btnVal.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-300 hover:text-white';
+            }
+
+            document.getElementById('chart1UnitLabel').innerText = metric === 'value' ? 'Miliar USD ($)' : 'Juta Ton Metrik';
+
+            updateDashboard();
+        }
+
+        // 6. FILTERING & PEMBARUAN UTAMA DASBOR
+        function getFilteredData() {
+            const comm = document.getElementById('filterCommodity').value;
+            const startY = parseInt(document.getElementById('filterStartYear').value);
+            const endY = parseInt(document.getElementById('filterEndYear').value);
+
+            return rawData.filter(item => {
+                const matchComm = (comm === 'ALL') || (item.c === comm);
+                const matchYear = (item.y >= startY && item.y <= endY);
+                return matchComm && matchYear;
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('filterCommodity').value = 'ALL';
+            document.getElementById('filterStartYear').value = '2016';
+            document.getElementById('filterEndYear').value = '2025';
+            document.getElementById('tableSearch').value = '';
+            document.getElementById('tableFlowFilter').value = 'ALL';
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            const filtered = getFilteredData();
+
+            // Hitung KPI
+            let totalExpValue = 0, totalImpValue = 0;
+            let totalExpWeight = 0, totalImpWeight = 0;
+
+            filtered.forEach(d => {
+                if (d.f === 'Export') {
+                    totalExpValue += d.v;
+                    totalExpWeight += d.w;
+                } else if (d.f === 'Import') {
+                    totalImpValue += d.v;
+                    totalImpWeight += d.w;
+                }
+            });
+
+            const totalTradeValue = totalExpValue + totalImpValue;
+            const totalTradeWeight = totalExpWeight + totalImpWeight;
+            const netBalanceValue = totalExpValue - totalImpValue;
+            const netBalanceWeight = totalExpWeight - totalImpWeight;
+
+            // Update KPI Cards UI
+            if (currentMetric === 'value') {
+                document.getElementById('kpiExportMain').innerText = formatUSD(totalExpValue);
+                document.getElementById('kpiExportDual').innerText = '/ ' + formatTons(totalExpWeight);
+
+                document.getElementById('kpiImportMain').innerText = formatUSD(totalImpValue);
+                document.getElementById('kpiImportDual').innerText = '/ ' + formatTons(totalImpWeight);
+
+                document.getElementById('kpiTradeMain').innerText = formatUSD(totalTradeValue);
+                document.getElementById('kpiTradeDual').innerText = '/ ' + formatTons(totalTradeWeight);
+
+                document.getElementById('kpiNetMain').innerText = (netBalanceValue >= 0 ? '+' : '') + formatUSD(netBalanceValue);
+                document.getElementById('kpiNetDual').innerText = '/ ' + (netBalanceWeight >= 0 ? '+' : '') + formatTons(netBalanceWeight);
+            } else {
+                document.getElementById('kpiExportMain').innerText = formatTons(totalExpWeight);
+                document.getElementById('kpiExportDual').innerText = '/ ' + formatUSD(totalExpValue);
+
+                document.getElementById('kpiImportMain').innerText = formatTons(totalImpWeight);
+                document.getElementById('kpiImportDual').innerText = '/ ' + formatUSD(totalImpValue);
+
+                document.getElementById('kpiTradeMain').innerText = formatTons(totalTradeWeight);
+                document.getElementById('kpiTradeDual').innerText = '/ ' + formatUSD(totalTradeValue);
+
+                document.getElementById('kpiNetMain').innerText = (netBalanceWeight >= 0 ? '+' : '') + formatTons(netBalanceWeight);
+                document.getElementById('kpiNetDual').innerText = '/ ' + (netBalanceValue >= 0 ? '+' : '') + formatUSD(netBalanceValue);
+            }
+
+            // Status Neraca Net Badge Style
+            const netStatus = document.getElementById('kpiNetStatus');
+            if (netBalanceValue >= 0) {
+                netStatus.className = "px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200";
+                netStatus.innerText = "Surplus Perdagangan";
+            } else {
+                netStatus.className = "px-2 py-0.5 text-[10px] font-semibold bg-rose-50 text-rose-700 rounded-full border border-rose-200";
+                netStatus.innerText = "Defisit Perdagangan";
+            }
+
+            // Render Ulang 3 Grafik Utama
+            renderChart1(filtered);
+            renderChart2(filtered);
+            renderChart3(filtered);
+
+            // Filter & Render Tabel Data
+            updateTableData();
+        }
+
+        // 7. RENDERING GRAFIK 1: TREN TAHUNAN & GARIS NERACA NET
+        function renderChart1(data) {
+            const ctx = document.getElementById('chart1Trend').getContext('2d');
+            if (chart1Instance) chart1Instance.destroy();
+
+            // Ekstrak tahun unik terurut
+            const startY = parseInt(document.getElementById('filterStartYear').value);
+            const endY = parseInt(document.getElementById('filterEndYear').value);
+            const years = [];
+            for (let y = startY; y <= endY; y++) years.push(y);
+
+            const expData = [], impData = [], netData = [];
+
+            years.forEach(yr => {
+                let ev = 0, iv = 0;
+                data.filter(d => d.y === yr).forEach(d => {
+                    const val = (currentMetric === 'value') ? d.v / 1e9 : (d.w / 1000) / 1e6; // B USD / M Ton
+                    if (d.f === 'Export') ev += val;
+                    if (d.f === 'Import') iv += val;
+                });
+                expData.push(ev);
+                impData.push(iv);
+                netData.push(ev - iv);
+            });
+
+            chart1Instance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: years,
+                    datasets: [
+                        {
+                            label: 'Ekspor',
+                            data: expData,
+                            backgroundColor: '#10B981',
+                            borderRadius: 6,
+                            order: 2
+                        },
+                        {
+                            label: 'Impor',
+                            data: impData,
+                            backgroundColor: '#F59E0B',
+                            borderRadius: 6,
+                            order: 2
+                        },
+                        {
+                            label: 'Neraca Net (Ekspor - Impor)',
+                            data: netData,
+                            type: 'line',
+                            borderColor: '#2563EB',
+                            borderWidth: 2.5,
+                            borderDash: [5, 5],
+                            pointBackgroundColor: '#2563EB',
+                            pointRadius: 4,
+                            fill: false,
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, font: { family: 'Plus Jakarta Sans', size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const unit = (currentMetric === 'value') ? ' Miliar USD' : ' Juta Ton';
+                                    return context.dataset.label + ': ' + context.raw.toFixed(2) + unit;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: {
+                            grid: { color: '#F1F5F9' },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ((currentMetric === 'value') ? ' B' : ' M Ton');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 8. RENDERING GRAFIK 2: COMBINED CHART PER KODE HS
+        function setChart2Scale(scale) {
+            chart2Scale = scale;
+            document.getElementById('scaleLinearBtn').className = scale === 'linear' ? 'px-2.5 py-1 text-[11px] font-bold rounded bg-white text-slate-800 shadow-sm transition' : 'px-2.5 py-1 text-[11px] font-bold rounded text-slate-500 hover:text-slate-800 transition';
+            document.getElementById('scaleLogBtn').className = scale === 'logarithmic' ? 'px-2.5 py-1 text-[11px] font-bold rounded bg-white text-slate-800 shadow-sm transition' : 'px-2.5 py-1 text-[11px] font-bold rounded text-slate-500 hover:text-slate-800 transition';
+            renderChart2(getFilteredData());
+        }
+
+        function setChart2LineLayer(layer) {
+            chart2Layer = layer;
+            document.getElementById('layerAllBtn').className = layer === 'ALL' ? 'px-2.5 py-1 text-[11px] font-bold rounded bg-white text-slate-800 shadow-sm transition' : 'px-2.5 py-1 text-[11px] font-bold rounded text-slate-500 hover:text-slate-800 transition';
+            document.getElementById('layerNetBtn').className = layer === 'NET' ? 'px-2.5 py-1 text-[11px] font-bold rounded bg-white text-slate-800 shadow-sm transition' : 'px-2.5 py-1 text-[11px] font-bold rounded text-slate-500 hover:text-slate-800 transition';
+            document.getElementById('layerShareBtn').className = layer === 'SHARE' ? 'px-2.5 py-1 text-[11px] font-bold rounded bg-white text-slate-800 shadow-sm transition' : 'px-2.5 py-1 text-[11px] font-bold rounded text-slate-500 hover:text-slate-800 transition';
+            renderChart2(getFilteredData());
+        }
+
+        function renderChart2(data) {
+            const ctx = document.getElementById('chart2Combined').getContext('2d');
+            if (chart2Instance) chart2Instance.destroy();
+
+            const hsCodes = ["260300", "740100", "740200", "740311", "740400"];
+            const hsLabels = ["260300 (Ores)", "740100 (Mattes)", "740200 (Anodes)", "740311 (Cathodes)", "740400 (Scrap)"];
+
+            const expVals = [], impVals = [], netVals = [], shareVals = [];
+            let grandTotal = 0;
+
+            hsCodes.forEach(code => {
+                let ev = 0, iv = 0;
+                data.filter(d => d.c === code).forEach(d => {
+                    const val = (currentMetric === 'value') ? d.v / 1e9 : (d.w / 1000) / 1e6;
+                    if (d.f === 'Export') ev += val;
+                    if (d.f === 'Import') iv += val;
+                });
+                expVals.push(ev);
+                impVals.push(iv);
+                netVals.push(ev - iv);
+                const tot = ev + iv;
+                grandTotal += tot;
+            });
+
+            // Hitung Pangsa %
+            hsCodes.forEach((code, idx) => {
+                const tot = expVals[idx] + impVals[idx];
+                shareVals.push(grandTotal > 0 ? (tot / grandTotal) * 100 : 0);
+            });
+
+            const datasets = [
+                {
+                    label: 'Batang Ekspor',
+                    data: expVals,
+                    backgroundColor: '#10B981',
+                    borderRadius: 6,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Batang Impor',
+                    data: impVals,
+                    backgroundColor: '#F59E0B',
+                    borderRadius: 6,
+                    yAxisID: 'y'
+                }
+            ];
+
+            if (chart2Layer === 'ALL' || chart2Layer === 'NET') {
+                datasets.push({
+                    label: 'Garis Neraca Net',
+                    data: netVals,
+                    type: 'line',
+                    borderColor: '#2563EB',
+                    backgroundColor: '#2563EB',
+                    borderWidth: 2.5,
+                    pointRadius: 5,
+                    yAxisID: 'y'
+                });
+            }
+
+            if (chart2Layer === 'ALL' || chart2Layer === 'SHARE') {
+                datasets.push({
+                    label: 'Garis Pangsa Perdagangan %',
+                    data: shareVals,
+                    type: 'line',
+                    borderColor: '#8B5CF6',
+                    backgroundColor: '#8B5CF6',
+                    borderWidth: 2.5,
+                    borderDash: [4, 4],
+                    pointRadius: 5,
+                    yAxisID: 'y1'
+                });
+            }
+
+            chart2Instance = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: hsLabels, datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (evt, activeElements) => {
+                        if (activeElements.length > 0) {
+                            const index = activeElements[0].index;
+                            const clickedHS = hsCodes[index];
+                            document.getElementById('filterCommodity').value = clickedHS;
+                            updateDashboard();
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, font: { family: 'Plus Jakarta Sans', size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.yAxisID === 'y1') {
+                                        return context.dataset.label + ': ' + context.raw.toFixed(2) + '%';
+                                    }
+                                    const unit = (currentMetric === 'value') ? ' Miliar USD' : ' Juta Ton';
+                                    return context.dataset.label + ': ' + context.raw.toFixed(2) + unit;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: {
+                            type: chart2Scale,
+                            position: 'left',
+                            grid: { color: '#F1F5F9' },
+                            title: { display: true, text: currentMetric === 'value' ? 'Miliar USD ($)' : 'Juta Ton Metrik' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            grid: { display: false },
+                            title: { display: true, text: 'Pangsa Perdagangan (%)' },
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // 9. RENDERING GRAFIK 3: EVOLUSI TAHUNAN PER KOMODITAS
+        function setChart3Flow(flow) {
+            chart3Flow = flow;
+            document.getElementById('c3FlowTotal').className = flow === 'TOTAL' ? 'px-3 py-1 text-xs font-semibold rounded bg-white text-slate-900 shadow-sm transition' : 'px-3 py-1 text-xs font-semibold rounded text-slate-600 hover:text-slate-900 transition';
+            document.getElementById('c3FlowExport').className = flow === 'Export' ? 'px-3 py-1 text-xs font-semibold rounded bg-white text-slate-900 shadow-sm transition' : 'px-3 py-1 text-xs font-semibold rounded text-slate-600 hover:text-slate-900 transition';
+            document.getElementById('c3FlowImport').className = flow === 'Import' ? 'px-3 py-1 text-xs font-semibold rounded bg-white text-slate-900 shadow-sm transition' : 'px-3 py-1 text-xs font-semibold rounded text-slate-600 hover:text-slate-900 transition';
+            renderChart3(getFilteredData());
+        }
+
+        function renderChart3(data) {
+            const ctx = document.getElementById('chart3CommodityEvolution').getContext('2d');
+            if (chart3Instance) chart3Instance.destroy();
+
+            const startY = parseInt(document.getElementById('filterStartYear').value);
+            const endY = parseInt(document.getElementById('filterEndYear').value);
+            const years = [];
+            for (let y = startY; y <= endY; y++) years.push(y);
+
+            const hsConfigs = [
+                { code: '260300', label: '260300 Ores', color: '#EF4444' },
+                { code: '740100', label: '740100 Mattes', color: '#F59E0B' },
+                { code: '740200', label: '740200 Anodes', color: '#10B981' },
+                { code: '740311', label: '740311 Cathodes', color: '#2563EB' },
+                { code: '740400', label: '740400 Scrap', color: '#8B5CF6' }
+            ];
+
+            const datasets = hsConfigs.map(cfg => {
+                const points = years.map(yr => {
+                    let sum = 0;
+                    data.filter(d => d.y === yr && d.c === cfg.code).forEach(d => {
+                        if (chart3Flow === 'TOTAL' || d.f === chart3Flow) {
+                            sum += (currentMetric === 'value') ? d.v / 1e9 : (d.w / 1000) / 1e6;
+                        }
+                    });
+                    return sum;
+                });
+
+                return {
+                    label: cfg.label,
+                    data: points,
+                    borderColor: cfg.color,
+                    backgroundColor: cfg.color,
+                    borderWidth: 2.5,
+                    pointRadius: 3.5,
+                    tension: 0.2,
+                    fill: false
+                };
+            });
+
+            chart3Instance = new Chart(ctx, {
+                type: 'line',
+                data: { labels: years, datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, font: { family: 'Plus Jakarta Sans', size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const unit = (currentMetric === 'value') ? ' Miliar USD' : ' Juta Ton';
+                                    return context.dataset.label + ': ' + context.raw.toFixed(2) + unit;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: {
+                            grid: { color: '#F1F5F9' },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ((currentMetric === 'value') ? ' B' : ' M Ton');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 10. RINCIAN TABEL UN COMTRADE (PAGINASI SLIDE 10 BARIS - TANPA FRASA '10 BARIS PER SLIDE')
+        function onTableSearchChange() {
+            tableCurrentPage = 0;
+            updateTableData();
+        }
+
+        function onTableFlowFilterChange() {
+            tableCurrentPage = 0;
+            updateTableData();
+        }
+
+        function sortTable(key) {
+            if (tableSortKey === key) {
+                tableSortOrder = (tableSortOrder === 'asc') ? 'desc' : 'asc';
+            } else {
+                tableSortKey = key;
+                tableSortOrder = 'desc';
+            }
+            updateSortIcons();
+            updateTableData();
+        }
+
+        function updateSortIcons() {
+            ['y', 'f', 'c', 'v', 'w'].forEach(k => {
+                const icon = document.getElementById(`sortIcon_${k}`);
+                if (!icon) return;
+                if (k === tableSortKey) {
+                    icon.className = tableSortOrder === 'asc' ? 'fa-solid fa-sort-up text-amber-500' : 'fa-solid fa-sort-down text-amber-500';
+                } else {
+                    icon.className = 'fa-solid fa-sort text-slate-400';
+                }
+            });
+        }
+
+        function updateTableData() {
+            const baseData = getFilteredData();
+            const searchTxt = document.getElementById('tableSearch').value.toLowerCase().trim();
+            const flowVal = document.getElementById('tableFlowFilter').value;
+
+            // Filter Tabel
+            tableFilteredData = baseData.filter(item => {
+                const matchFlow = (flowVal === 'ALL') || (item.f === flowVal);
+                const matchSearch = (!searchTxt) || 
+                                    item.c.toLowerCase().includes(searchTxt) || 
+                                    item.d.toLowerCase().includes(searchTxt) ||
+                                    item.y.toString().includes(searchTxt);
+                return matchFlow && matchSearch;
+            });
+
+            // Pengurutan Tabel
+            tableFilteredData.sort((a, b) => {
+                let valA = a[tableSortKey];
+                let valB = b[tableSortKey];
+                if (typeof valA === 'string') {
+                    return tableSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                }
+                return tableSortOrder === 'asc' ? valA - valB : valB - valA;
+            });
+
+            const totalRows = tableFilteredData.length;
+            const totalPages = Math.ceil(totalRows / pageSize) || 1;
+
+            if (tableCurrentPage >= totalPages) tableCurrentPage = totalPages - 1;
+            if (tableCurrentPage < 0) tableCurrentPage = 0;
+
+            const startIdx = tableCurrentPage * pageSize;
+            const endIdx = Math.min(startIdx + pageSize, totalRows);
+            const pageData = tableFilteredData.slice(startIdx, endIdx);
+
+            // Render Baris Tabel
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400 italic">Tidak ada data yang sesuai dengan pencarian atau filter.</td></tr>`;
+            } else {
+                pageData.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-amber-50/40 transition duration-150';
+
+                    const flowBadge = row.f === 'Export' 
+                        ? `<span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 rounded-md border border-emerald-200"><i class="fa-solid fa-arrow-up text-[9px] mr-1"></i>Ekspor</span>`
+                        : `<span class="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-md border border-amber-200"><i class="fa-solid fa-arrow-down text-[9px] mr-1"></i>Impor</span>`;
+
+                    let sourceBadge = `<span class="px-2 py-0.5 text-[10px] font-mono bg-slate-100 text-slate-600 rounded border border-slate-200">${row.ws}</span>`;
+                    if (row.ws === 'missing') {
+                        sourceBadge = `<span class="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-400 rounded">Tidak Tercatat</span>`;
+                    }
+
+                    const metricTons = row.w / 1000;
+
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 font-mono font-bold text-slate-900">${row.y}</td>
+                        <td class="py-3 px-4">${flowBadge}</td>
+                        <td class="py-3 px-4 font-mono font-semibold text-amber-600">${row.c}</td>
+                        <td class="py-3 px-4 max-w-xs truncate" title="${row.d}">${row.d}</td>
+                        <td class="py-3 px-4 text-right font-mono font-bold text-slate-900">${formatUSD(row.v)}</td>
+                        <td class="py-3 px-4 text-right font-mono font-semibold text-slate-700">${row.w > 0 ? formatNumber(metricTons) + ' Ton' : '<span class="text-slate-400 font-normal">-</span>'}</td>
+                        <td class="py-3 px-4 text-right font-mono text-slate-500">${row.w > 0 ? formatNumber(row.w) + ' kg' : '<span class="text-slate-400 font-normal">-</span>'}</td>
+                        <td class="py-3 px-4 text-center">${sourceBadge}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Update Info Paginasi & Slide (TIDAK ADA KALIMAT '10 baris per slide')
+            const infoText = totalRows > 0 
+                ? `Menampilkan ${startIdx + 1}–${endIdx} dari ${totalRows} baris • Slide ${tableCurrentPage + 1} / ${totalPages}`
+                : `Menampilkan 0 baris`;
+            document.getElementById('tablePaginationInfo').innerText = infoText;
+
+            // Render Tombol Nomor Slide & Indikator Titik Slide
+            renderPaginationControls(totalPages);
+        }
+
+        function renderPaginationControls(totalPages) {
+            // Update Tombol Prev / Next
+            document.getElementById('btnPrevPage').disabled = (tableCurrentPage === 0);
+            document.getElementById('btnNextPage').disabled = (tableCurrentPage >= totalPages - 1 || totalPages === 0);
+
+            // Indikator Titik Slide di Header Tabel
+            const dotsContainer = document.getElementById('tableSlideDots');
+            dotsContainer.innerHTML = '';
+            for (let i = 0; i < Math.min(totalPages, 10); i++) {
+                const dot = document.createElement('div');
+                dot.className = i === tableCurrentPage 
+                    ? 'w-2.5 h-2.5 rounded-full bg-amber-500 transition-all duration-200' 
+                    : 'w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 cursor-pointer transition-all duration-200';
+                dot.onclick = () => { tableCurrentPage = i; updateTableData(); };
+                dotsContainer.appendChild(dot);
+            }
+
+            // Nomor Halaman Paginasi Footer
+            const numsContainer = document.getElementById('tablePageNumbers');
+            numsContainer.innerHTML = '';
+
+            let startP = Math.max(0, tableCurrentPage - 2);
+            let endP = Math.min(totalPages - 1, startP + 4);
+            if (endP - startP < 4) startP = Math.max(0, endP - 4);
+
+            for (let i = startP; i <= endP; i++) {
+                const btn = document.createElement('button');
+                btn.className = i === tableCurrentPage 
+                    ? 'px-2.5 py-1 text-xs font-bold rounded-md bg-amber-500 text-white shadow-sm'
+                    : 'px-2.5 py-1 text-xs font-semibold rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-100';
+                btn.innerText = i + 1;
+                btn.onclick = () => { tableCurrentPage = i; updateTableData(); };
+                numsContainer.appendChild(btn);
+            }
+        }
+
+        function changePage(delta) {
+            tableCurrentPage += delta;
+            updateTableData();
+        }
+
+        // 11. EKSPOR DATA KE FORMAT CSV
+        function downloadCSV() {
+            if (!tableFilteredData || tableFilteredData.length === 0) {
+                alert('Tidak ada data untuk diunduh.');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Tahun,Arus,Kode_HS,Deskripsi_Komoditas,Nilai_USD,Berat_Kg,Berat_Ton_Metrik,Sumber_Berat\n";
+
+            tableFilteredData.forEach(row => {
+                const descEscaped = `"${row.d.replace(/"/g, '""')}"`;
+                const metricTons = (row.w / 1000).toFixed(3);
+                csvContent += `${row.y},${row.f},${row.c},${descEscaped},${row.v},${row.w},${metricTons},${row.ws}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `UN_Comtrade_US_Copper_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
